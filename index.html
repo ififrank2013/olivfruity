@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Webstore</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header, footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        main {
+            padding: 1rem;
+        }
+        .item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 1rem 0;
+            padding: 1rem;
+        }
+        .item img, .item video {
+            max-width: 100%;
+            height: auto;
+        }
+        .checkout-item {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .button {
+            background-color: #28a745;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #218838;
+        }
+        .total {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to My Online Webstore</h1>
+        <p>Contact us: <a href="tel:+1234567890">+1234567890</a></p>
+    </header>
+
+    <main>
+        <h2>Upload Items</h2>
+        <form id="uploadForm">
+            <label for="file">Upload Image or Video:</label>
+            <input type="file" id="file" accept="image/*,video/*" required>
+            <br>
+            <label for="price">Enter Price:</label>
+            <input type="number" id="price" step="0.01" required>
+            <br>
+            <button type="submit" class="button">Add Item</button>
+        </form>
+
+        <h2>Available Items</h2>
+        <div id="items"></div>
+
+        <h2>Checkout</h2>
+        <div id="checkout"></div>
+        <p class="total" id="totalAmount">Total Amount: $0.00</p>
+
+        <h2>Payment Details</h2>
+        <p>Please make payments to:</p>
+        <p>Bank Name: Example Bank</p>
+        <p>Account Number: 123456789</p>
+        <p>Account Name: Example Business</p>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 My Online Webstore</p>
+    </footer>
+
+    <script>
+        const itemsContainer = document.getElementById('items');
+        const checkoutContainer = document.getElementById('checkout');
+        const totalAmountElement = document.getElementById('totalAmount');
+
+        let totalAmount = 0;
+        const items = [];
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('file');
+            const priceInput = document.getElementById('price');
+            const file = fileInput.files[0];
+            const price = parseFloat(priceInput.value);
+
+            if (file && !isNaN(price)) {
+                const item = { id: items.length + 1, file, price };
+                items.push(item);
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'item';
+                    itemElement.innerHTML = `
+                        ${file.type.startsWith('image') ? `<img src="${e.target.result}" alt="Item Image">` : `<video controls src="${e.target.result}"></video>`}
+                        <p>Price: $${price.toFixed(2)}</p>
+                        <label for="quantity_${item.id}">Quantity:</label>
+                        <input type="number" id="quantity_${item.id}" min="1" value="1">
+                        <button class="button" onclick="addToCheckout(${item.id})">Add to Checkout</button>
+                    `;
+                    itemsContainer.appendChild(itemElement);
+                };
+                reader.readAsDataURL(file);
+            }
+
+            fileInput.value = '';
+            priceInput.value = '';
+        });
+
+        function addToCheckout(itemId) {
+            const item = items.find(i => i.id === itemId);
+            const quantityInput = document.getElementById(`quantity_${item.id}`);
+            const quantity = parseInt(quantityInput.value);
+
+            if (!isNaN(quantity) && quantity > 0) {
+                const amount = item.price * quantity;
+                totalAmount += amount;
+
+                const checkoutItem = document.createElement('div');
+                checkoutItem.className = 'checkout-item';
+                checkoutItem.innerHTML = `
+                    <p>Item: ${item.file.name}</p>
+                    <p>Price per Item: $${item.price.toFixed(2)}</p>
+                    <p>Quantity: ${quantity}</p>
+                    <p>Amount: $${amount.toFixed(2)}</p>
+                `;
+                checkoutContainer.appendChild(checkoutItem);
+
+                totalAmountElement.textContent = `Total Amount: $${totalAmount.toFixed(2)}`;
+            }
+        }
+    </script>
+</body>
+</html>
